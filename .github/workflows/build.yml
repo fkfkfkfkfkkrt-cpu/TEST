@@ -1,0 +1,66 @@
+name: Lotto AI App CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions: write-all
+
+jobs:
+  build_ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Git Repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: Get Flutter Dependencies
+        run: flutter pub get
+        
+      - name: Set Environment Variables
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "VERSION=1.1.$(date +%Y%m%d.%H%M)" >> "$GITHUB_ENV"
+          echo "TAG=v1.1.$(date +%Y%m%d.%H%M)" >> "$GITHUB_ENV"
+          echo "COMMIT_ID=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
+          echo "COMMIT_MSG<<EOF" >> "$GITHUB_ENV"
+          git log -1 --pretty=%B >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
+          echo "APP_NAME=樂透智選-$(date +%Y%m%d-%H%M).ipa" >> "$GITHUB_ENV"
+        
+      - name: Build iOS (no codesign)
+        run: |
+          flutter build ios --release --no-codesign
+          cd build/ios/iphoneos
+          mkdir Payload
+          mv Runner.app Payload/
+          zip -r 樂透智選-$(date +%Y%m%d-%H%M).ipa Payload/
+          
+      - name: Create Release
+        if: github.event_name != 'pull_request'
+        uses: ncipollo/release-action@v1.16.0
+        with:
+          tag: ${{ env.TAG }}
+          name: 樂透智選 v${{ env.VERSION }} - ${{ env.COMMIT_ID }}
+          body: |
+            📱 **樂透智選 iOS App** | 版本 `${{ env.VERSION }}` | Commit ${{ env.COMMIT_ID }}
+            
+            🤖 此版本由 GitHub Actions 自動構建
+            
+            ### 📋 更新內容
+            ${{ env.COMMIT_MSG }}
+            
+            ### 📥 下載說明
+            下載 `.ipa` 文件後，可使用 AltStore、Sideloadly 或其他工具安裝到 iOS 設備
+          artifacts: |
+            build/ios/iphoneos/*.ipa
+          generateReleaseNotes: true
+          makeLatest: true
+          token: ${{ secrets.GITHUB_TOKEN }}

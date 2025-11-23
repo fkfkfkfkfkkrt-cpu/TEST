@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "133381868264",
+    "project_id": "loto-c7ead",
+    "storage_bucket": "loto-c7ead.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:133381868264:android:d8359d84950ccbd035175d",
+        "android_client_info": {
+          "package_name": "com.intellilotto.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxl1aOUw9W7byEGnB1i2V4IpYx_Wc7Aew"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
